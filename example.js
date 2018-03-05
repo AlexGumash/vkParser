@@ -1,8 +1,23 @@
 const { Builder, By, Key, until } = require("selenium-webdriver");
 const { login, password } = require("./secret.json");
+const feedTemplate = require("./feed-template.json");
 
-async function example() {
-  const driver = await new Builder().forBrowser("chrome").build();
+const parsedFeeds = [];
+
+function createDriver() {
+  return new Builder().forBrowser("chrome").build();
+}
+
+function getFeedText(feed, driver) {
+  return Promise.all([
+    feed.findElement(By.className("post_author")).getText(),
+    feed.findElement(By.className("post_date")).getText(),
+    feed.findElement(By.className("wall_text")).getText()
+  ]);
+}
+
+async function vkParse() {
+  const driver = await createDriver();
   try {
     await driver.get("https://vk.com");
     driver.wait(
@@ -17,9 +32,22 @@ async function example() {
     );
     await driver.findElement(By.id("index_pass")).sendKeys(password);
     await driver.findElement(By.id("index_login_button")).click();
+    driver
+      .wait(
+        until.elementsLocated(By.className("feed_row ")),
+        10000,
+        "Timeout error"
+      )
+      .then(function(feeds, reject) {
+        feeds.map(feed => {
+          Promise.all([getFeedText(feed, driver)]).then(v => {
+            console.log(v);
+          });
+        });
+      });
   } catch (err) {
     console.log(err);
   }
 }
 
-example();
+vkParse();
