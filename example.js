@@ -8,7 +8,12 @@ function createDriver() {
   return new Builder().forBrowser("chrome").build();
 }
 
-function getFeedText(feed, driver) {
+async function getFeedText(feed, driver) {
+  feed.findElements(By.className("wall_post_more")).then(v => {
+    if (v.length > 0) {
+      v[0].click();
+    }
+  });
   return Promise.all([
     feed.findElement(By.className("post_author")).getText(),
     feed.findElement(By.className("post_date")).getText(),
@@ -39,10 +44,12 @@ async function vkParse() {
         "Timeout error"
       )
       .then(function(feeds, reject) {
-        feeds.map(feed => {
-          Promise.all([getFeedText(feed, driver)]).then(v => {
-            console.log(v);
-          });
+        feeds.map(async feed => {
+          if (await feed.isDisplayed()) {
+            Promise.all([getFeedText(feed, driver)]).then(v => {
+              console.log(v);
+            });
+          }
         });
       });
   } catch (err) {
