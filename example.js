@@ -8,17 +8,42 @@ function createDriver() {
   return new Builder().forBrowser("chrome").build();
 }
 
-async function getFeedText(feed, driver) {
-  feed.findElements(By.className("wall_post_more")).then(v => {
-    if (v.length > 0) {
-      v[0].click();
-    }
-  });
-  return Promise.all([
-    feed.findElement(By.className("post_author")).getText(),
-    feed.findElement(By.className("post_date")).getText(),
-    feed.findElement(By.className("wall_text")).getText()
-  ]);
+async function getSimpleImg(feed) {
+  //   feed.findElements(By.className("page_post_thumb_wrap")).then(async images => {
+  //     return await Promise.all(
+  //       images.map(async image => {
+  //         console.log(await image.getCssValue("background-image"));
+  //         return await image.getCssValue("background-image");
+  //       })
+  //     );
+  //   });
+}
+
+async function getLinkImg(feed) {
+  return;
+}
+
+async function getAuthorImg(feed) {
+  return feed.findElement(By.className("post_img")).getAttribute("src");
+}
+
+async function getFeedImg(feed) {
+  return Promise.all([getSimpleImg(feed), getAuthorImg(feed)]);
+}
+
+async function getFeedLinks(feed) {}
+
+async function getFeedText(feed) {
+  // feed.findElements(By.className("wall_post_more")).then(v => {
+  //   if (v.length > 0) {
+  //     v[0].click();
+  //   }
+  // });
+  // return Promise.all([
+  //   feed.findElement(By.className("post_author")).getText(),
+  //   feed.findElement(By.className("post_date")).getText(),
+  //   feed.findElement(By.className("wall_text")).getText()
+  // ]);
 }
 
 async function vkParse() {
@@ -46,7 +71,7 @@ async function vkParse() {
       .then(function(feeds, reject) {
         feeds.map(async feed => {
           if (await feed.isDisplayed()) {
-            Promise.all([getFeedText(feed, driver)]).then(v => {
+            Promise.all([getFeedText(feed), getFeedImg(feed)]).then(v => {
               console.log(v);
             });
           }
